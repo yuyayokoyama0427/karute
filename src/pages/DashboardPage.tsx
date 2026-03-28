@@ -88,6 +88,26 @@ export function DashboardPage({ user, projects, invoices, clients, onTabChange }
     })
     .slice(0, 5)
 
+  // --- 来月の入金予定 ---
+  const nextMonthNum = month === 12 ? 1 : month + 1
+  const nextYearNum = month === 12 ? year + 1 : year
+  const nextMonthKey = `${nextYearNum}-${pad2(nextMonthNum)}`
+  const nextMonthExpected = invoices
+    .filter(inv => inv.status === 'invoiced' && inv.due_date?.startsWith(nextMonthKey))
+    .reduce((sum, inv) => sum + inv.amount, 0)
+
+  // --- クライアント別収益ランキング（入金済ベース）---
+  const clientRanking = clients
+    .map(c => ({
+      name: c.name,
+      total: invoices
+        .filter(inv => inv.client_id === c.id && inv.status === 'paid')
+        .reduce((s, inv) => s + inv.amount, 0),
+    }))
+    .filter(c => c.total > 0)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5)
+
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
       <header className="bg-white border-b border-gray-200 px-6 py-5">
@@ -238,6 +258,50 @@ export function DashboardPage({ user, projects, invoices, clients, onTabChange }
                 <Bar dataKey="amount" fill="#4F46E5" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* 来月の入金予定 + クライアント別収益 */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <p className="text-sm text-gray-500 mb-1">来月の入金予定</p>
+            <p className="text-xl font-bold text-indigo-600">{formatCurrency(nextMonthExpected)}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{nextYearNum}年{nextMonthNum}月 期限</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <p className="text-sm text-gray-500 mb-1">進行中の案件</p>
+            <p className="text-xl font-bold text-gray-900">{activeProjects}<span className="text-sm font-normal text-gray-400 ml-1">件</span></p>
+            <p className="text-xs text-gray-400 mt-0.5">完了 {projects.filter(p => p.status === 'completed').length}件 / 保留 {projects.filter(p => p.status === 'paused').length}件</p>
+          </div>
+        </div>
+
+        {/* クライアント別収益ランキング */}
+        {clientRanking.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <p className="text-base font-medium text-gray-700 mb-3">クライアント別収益（入金済）</p>
+            <div className="space-y-2">
+              {clientRanking.map((c, i) => {
+                const maxTotal = clientRanking[0].total
+                const pct = maxTotal > 0 ? (c.total / maxTotal) * 100 : 0
+                return (
+                  <div key={c.name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
+                        <span className="text-sm font-medium text-gray-800 truncate max-w-[8rem]">{c.name}</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-900">{formatCurrency(c.total)}</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-indigo-400 rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 

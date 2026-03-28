@@ -183,6 +183,7 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
   const [editing, setEditing] = useState<Project | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'all'>('all')
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
 
   const filtered = filterStatus === 'all'
     ? projects
@@ -224,6 +225,27 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
           {!isPro && (
             <span className="text-base text-gray-400">{projects.length}/{FREE_LIMIT}</span>
           )}
+          {/* ビュー切り替え */}
+          <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-700' : 'text-gray-400'}`}
+              title="リスト表示"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-white shadow-sm text-gray-700' : 'text-gray-400'}`}
+              title="カンバン表示"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+              </svg>
+            </button>
+          </div>
           {isPro ? (
             <button
               onClick={() => exportProjectsCsv(projects, clients)}
@@ -248,112 +270,173 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
         </div>
       </header>
 
-      {/* フィルタ */}
-      <div className="flex gap-2 px-4 pt-4 overflow-x-auto pb-1">
-        {(['all', 'active', 'completed', 'paused'] as const).map(s => (
-          <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`text-base font-medium px-3 py-1.5 rounded-full whitespace-nowrap transition-colors ${
-              filterStatus === s
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white text-gray-500 border border-gray-200'
-            }`}
-          >
-            {s === 'all' ? 'すべて' : STATUS_LABELS[s]}
-          </button>
-        ))}
-      </div>
-
-      <div className="p-4 space-y-3">
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">📁</p>
-            <p className="text-base mb-4">案件がまだありません</p>
+      {/* フィルタ（リストのみ） */}
+      {viewMode === 'list' && (
+        <div className="flex gap-2 px-4 pt-4 overflow-x-auto pb-1">
+          {(['all', 'active', 'completed', 'paused'] as const).map(s => (
             <button
-              onClick={handleAddClick}
-              className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`text-base font-medium px-3 py-1.5 rounded-full whitespace-nowrap transition-colors ${
+                filterStatus === s
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white text-gray-500 border border-gray-200'
+              }`}
             >
-              最初の案件を追加する →
+              {s === 'all' ? 'すべて' : STATUS_LABELS[s]}
             </button>
-          </div>
-        ) : (
-          filtered.map(project => (
-            <div key={project.id} className="bg-white rounded-2xl p-4 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-base font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status]}`}>
-                      {STATUS_LABELS[project.status]}
-                    </span>
+          ))}
+        </div>
+      )}
+
+      {/* ===== リストビュー ===== */}
+      {viewMode === 'list' && (
+        <div className="p-4 space-y-3">
+          {filtered.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <p className="text-4xl mb-3">📁</p>
+              <p className="text-base mb-4">案件がまだありません</p>
+              <button
+                onClick={handleAddClick}
+                className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                最初の案件を追加する →
+              </button>
+            </div>
+          ) : (
+            filtered.map(project => (
+              <div key={project.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{project.title}</p>
+                    {clientName(project.client_id) && (
+                      <p className="text-base text-gray-500">{clientName(project.client_id)}</p>
+                    )}
                   </div>
-                  <p className="font-medium text-gray-900 truncate">{project.title}</p>
-                  {clientName(project.client_id) && (
-                    <p className="text-base text-gray-500">{clientName(project.client_id)}</p>
+                  <div className="flex gap-2 ml-2">
+                    <button onClick={() => setEditing(project)} className="text-base text-indigo-500 hover:text-indigo-700 transition-colors">編集</button>
+                    <button onClick={() => setConfirmDelete(project.id)} className="text-base text-red-400 hover:text-red-600 transition-colors">削除</button>
+                  </div>
+                </div>
+                {/* クイックステータス変更 */}
+                <div className="flex gap-1.5 mt-3">
+                  {(['active', 'completed', 'paused'] as const).map(s => (
+                    <button
+                      key={s}
+                      onClick={() => onUpdateStatus(project.id, s)}
+                      className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                        project.status === s ? STATUS_COLORS[s] : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                    >
+                      {STATUS_LABELS[s]}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-base text-gray-500">
+                  {project.rate && (
+                    <span>{project.rate.toLocaleString('ja-JP')}円{project.rate_type === 'hourly' ? '/h' : '（固定）'}</span>
+                  )}
+                  {project.start_date && (
+                    <span>{project.start_date}{project.end_date ? ` 〜 ${project.end_date}` : ' 〜'}</span>
                   )}
                 </div>
-                <div className="flex gap-2 ml-2">
+                {project.memo && <p className="text-base text-gray-400 mt-2 line-clamp-2">{project.memo}</p>}
+              </div>
+            ))
+          )}
+
+          {!isPro && projects.length >= FREE_LIMIT && (
+            <div className="bg-indigo-50 rounded-2xl p-4 text-center">
+              <p className="text-base text-indigo-700 mb-2">無料プランは{FREE_LIMIT}件まで</p>
+              <button onClick={onUpgrade} className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                Proで無制限に使う →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ===== カンバンビュー ===== */}
+      {viewMode === 'kanban' && (
+        <div className="p-4 overflow-x-auto">
+          <div className="flex gap-4 min-w-[640px]">
+            {(['active', 'completed', 'paused'] as const).map(col => {
+              const colProjects = projects.filter(p => p.status === col)
+              const colTotal = colProjects.reduce((s, p) => s + (p.rate ?? 0), 0)
+              const colColors: Record<ProjectStatus, string> = {
+                active: 'border-indigo-200 bg-indigo-50',
+                completed: 'border-green-200 bg-green-50',
+                paused: 'border-gray-200 bg-gray-50',
+              }
+              const colHeaderColors: Record<ProjectStatus, string> = {
+                active: 'text-indigo-700',
+                completed: 'text-green-700',
+                paused: 'text-gray-600',
+              }
+              return (
+                <div key={col} className={`flex-1 min-w-[200px] rounded-2xl border-2 ${colColors[col]} flex flex-col`}>
+                  {/* カラムヘッダー */}
+                  <div className="px-3 py-2.5 border-b border-current/10">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-bold ${colHeaderColors[col]}`}>{STATUS_LABELS[col]}</span>
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${STATUS_COLORS[col]}`}>{colProjects.length}</span>
+                    </div>
+                    {colTotal > 0 && (
+                      <p className="text-xs text-gray-400 mt-0.5">{colTotal.toLocaleString('ja-JP')}円</p>
+                    )}
+                  </div>
+
+                  {/* カード */}
+                  <div className="p-2 space-y-2 flex-1">
+                    {colProjects.length === 0 ? (
+                      <p className="text-xs text-gray-400 text-center py-6">なし</p>
+                    ) : (
+                      colProjects.map(project => (
+                        <div key={project.id} className="bg-white rounded-xl p-3 shadow-sm">
+                          <div className="flex items-start justify-between gap-1">
+                            <p className="text-sm font-medium text-gray-900 leading-snug flex-1 min-w-0">{project.title}</p>
+                            <button onClick={() => setEditing(project)} className="text-xs text-indigo-400 hover:text-indigo-600 shrink-0">編集</button>
+                          </div>
+                          {clientName(project.client_id) && (
+                            <p className="text-xs text-gray-400 mt-0.5">{clientName(project.client_id)}</p>
+                          )}
+                          {project.rate && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {project.rate.toLocaleString('ja-JP')}円{project.rate_type === 'hourly' ? '/h' : ''}
+                            </p>
+                          )}
+                          {/* 他ステータスへ移動 */}
+                          <div className="flex gap-1 mt-2 pt-2 border-t border-gray-100">
+                            {(['active', 'completed', 'paused'] as const)
+                              .filter(s => s !== col)
+                              .map(s => (
+                                <button
+                                  key={s}
+                                  onClick={() => onUpdateStatus(project.id, s)}
+                                  className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+                                >
+                                  → {STATUS_LABELS[s]}
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* 追加ボタン */}
                   <button
-                    onClick={() => setEditing(project)}
-                    className="text-base text-indigo-500 hover:text-indigo-700 transition-colors"
+                    onClick={handleAddClick}
+                    className="mx-2 mb-2 py-1.5 text-xs text-gray-400 hover:text-gray-600 border border-dashed border-gray-300 rounded-xl transition-colors"
                   >
-                    編集
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(project.id)}
-                    className="text-base text-red-400 hover:text-red-600 transition-colors"
-                  >
-                    削除
+                    + 追加
                   </button>
                 </div>
-              </div>
-              {/* クイックステータス変更 */}
-              <div className="flex gap-1.5 mt-3">
-                {(['active', 'completed', 'paused'] as const).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => onUpdateStatus(project.id, s)}
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
-                      project.status === s
-                        ? STATUS_COLORS[s]
-                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                    }`}
-                  >
-                    {STATUS_LABELS[s]}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-base text-gray-500">
-                {project.rate && (
-                  <span>
-                    {project.rate.toLocaleString('ja-JP')}円
-                    {project.rate_type === 'hourly' ? '/h' : '（固定）'}
-                  </span>
-                )}
-                {project.start_date && (
-                  <span>{project.start_date}{project.end_date ? ` 〜 ${project.end_date}` : ' 〜'}</span>
-                )}
-              </div>
-              {project.memo && (
-                <p className="text-base text-gray-400 mt-2 line-clamp-2">{project.memo}</p>
-              )}
-            </div>
-          ))
-        )}
-
-        {!isPro && projects.length >= FREE_LIMIT && (
-          <div className="bg-indigo-50 rounded-2xl p-4 text-center">
-            <p className="text-base text-indigo-700 mb-2">無料プランは{FREE_LIMIT}件まで</p>
-            <button
-              onClick={onUpgrade}
-              className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-            >
-              Proで無制限に使う →
-            </button>
+              )
+            })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {(showModal || editing) && (
         <ProjectModal

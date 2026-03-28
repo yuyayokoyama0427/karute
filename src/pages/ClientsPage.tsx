@@ -4,6 +4,27 @@ import type { Client, ClientForm, Invoice, Project } from '../types/index'
 
 const FREE_LIMIT = 3
 
+function exportClientsCsv(clients: Client[], projects: Project[], invoices: Invoice[]) {
+  const headers = ['名前', '会社名', 'メール', '電話番号', '案件数', '請求合計', 'メモ']
+  const rows = clients.map(c => [
+    c.name,
+    c.company ?? '',
+    c.email ?? '',
+    c.phone ?? '',
+    String(projects.filter(p => p.client_id === c.id).length),
+    String(invoices.filter(i => i.client_id === c.id).reduce((s, i) => s + i.amount, 0)),
+    c.memo ?? '',
+  ])
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `karute_clients_${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 interface Props {
   clients: Client[]
   projects: Project[]
@@ -152,6 +173,21 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
         <div className="flex items-center gap-2">
           {!isPro && (
             <span className="text-base text-gray-400">{clients.length}/{FREE_LIMIT}</span>
+          )}
+          {isPro ? (
+            <button
+              onClick={() => exportClientsCsv(clients, projects, invoices)}
+              className="text-base text-indigo-600 border border-indigo-300 px-3 py-1.5 rounded-xl hover:bg-indigo-50 transition-colors"
+            >
+              CSV
+            </button>
+          ) : (
+            <button
+              onClick={onUpgrade}
+              className="text-base text-gray-400 border border-gray-200 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              CSV (Pro)
+            </button>
           )}
           <button
             onClick={handleAddClick}

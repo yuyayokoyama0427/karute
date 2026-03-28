@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import type { Invoice, Project } from '../types/index'
+import type { Client, Invoice, Project } from '../types/index'
 import {
   BarChart,
   Bar,
@@ -15,6 +15,7 @@ interface Props {
   user: User
   projects: Project[]
   invoices: Invoice[]
+  clients: Client[]
 }
 
 function formatCurrency(n: number): string {
@@ -25,7 +26,7 @@ function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
 
-export function DashboardPage({ user, projects, invoices }: Props) {
+export function DashboardPage({ user, projects, invoices, clients }: Props) {
   const now = new Date()
   const [mode, setMode] = useState<'month' | 'year'>('month')
   const [year, setYear] = useState(now.getFullYear())
@@ -170,7 +171,7 @@ export function DashboardPage({ user, projects, invoices }: Props) {
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm col-span-2">
             <p className="text-base text-gray-500 mb-3">案件数</p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <div className="text-center">
                 <p className="text-2xl font-bold text-gray-900">{projects.length}</p>
                 <p className="text-sm text-gray-400 mt-0.5">全案件</p>
@@ -182,6 +183,10 @@ export function DashboardPage({ user, projects, invoices }: Props) {
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{projects.filter(p => p.status === 'completed').length}</p>
                 <p className="text-sm text-gray-400 mt-0.5">完了</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-400">{projects.filter(p => p.status === 'paused').length}</p>
+                <p className="text-sm text-gray-400 mt-0.5">保留</p>
               </div>
             </div>
           </div>
@@ -239,11 +244,14 @@ export function DashboardPage({ user, projects, invoices }: Props) {
                 <div key={inv.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                   <div>
                     <p className="text-base font-medium text-gray-800">{formatCurrency(inv.amount)}</p>
+                    {clients.find(c => c.id === inv.client_id)?.name && (
+                      <p className="text-sm text-gray-500">{clients.find(c => c.id === inv.client_id)?.name}</p>
+                    )}
                     {inv.due_date && (
-                      <p className="text-base text-gray-400">期限: {inv.due_date}</p>
+                      <p className="text-sm text-gray-400">期限: {inv.due_date}</p>
                     )}
                   </div>
-                  <span className="text-base bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                  <span className="text-sm bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
                     請求済
                   </span>
                 </div>

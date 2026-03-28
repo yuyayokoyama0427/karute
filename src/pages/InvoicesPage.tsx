@@ -300,7 +300,13 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">💰</p>
-            <p className="text-base">請求がまだありません</p>
+            <p className="text-base mb-4">請求がまだありません</p>
+            <button
+              onClick={() => setShowModal(true)}
+              className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              最初の請求を追加する →
+            </button>
           </div>
         ) : (
           filtered.map(inv => {

@@ -2,8 +2,12 @@ const STORAGE_KEY = 'karute_license'
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export function isProFromStorage(): boolean {
-  const key = localStorage.getItem(STORAGE_KEY)
-  return key !== null && UUID_REGEX.test(key)
+  try {
+    const key = localStorage.getItem(STORAGE_KEY)
+    return key !== null && UUID_REGEX.test(key)
+  } catch {
+    return false
+  }
 }
 
 export async function validateLicense(key: string): Promise<boolean> {
@@ -15,7 +19,7 @@ export async function validateLicense(key: string): Promise<boolean> {
     })
     const data = await res.json() as { valid: boolean }
     if (data.valid) {
-      localStorage.setItem(STORAGE_KEY, key)
+      try { localStorage.setItem(STORAGE_KEY, key) } catch {}
       return true
     }
     return false
@@ -25,5 +29,5 @@ export async function validateLicense(key: string): Promise<boolean> {
 }
 
 export function clearLicense(): void {
-  localStorage.removeItem(STORAGE_KEY)
+  try { localStorage.removeItem(STORAGE_KEY) } catch {}
 }

@@ -202,7 +202,13 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
         {clients.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">👤</p>
-            <p className="text-base">クライアントがまだいません</p>
+            <p className="text-base mb-4">クライアントがまだいません</p>
+            <button
+              onClick={() => setShowModal(true)}
+              className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              最初のクライアントを追加する →
+            </button>
           </div>
         ) : (
           clients.map(client => (

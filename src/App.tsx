@@ -45,6 +45,7 @@ function App() {
           user={user}
           projects={projects}
           invoices={invoices}
+          clients={clients}
         />
       )}
       {tab === 'clients' && (

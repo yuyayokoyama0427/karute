@@ -268,7 +268,13 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">📁</p>
-            <p className="text-base">案件がまだありません</p>
+            <p className="text-base mb-4">案件がまだありません</p>
+            <button
+              onClick={handleAddClick}
+              className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              最初の案件を追加する →
+            </button>
           </div>
         ) : (
           filtered.map(project => (

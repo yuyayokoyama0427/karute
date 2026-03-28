@@ -68,6 +68,7 @@ export interface Project {
 }
 
 export type InvoiceStatus = 'unpaid' | 'invoiced' | 'paid'
+export type RecurrencePeriod = 'monthly' | 'quarterly' | 'yearly'
 
 export interface Invoice {
   id: string
@@ -80,6 +81,8 @@ export interface Invoice {
   due_date: string | null
   paid_date: string | null
   memo: string | null
+  recurrence_period: RecurrencePeriod | null
+  recurrence_next_date: string | null
   created_at: string
 }
 
@@ -111,4 +114,5 @@ export interface InvoiceForm {
   due_date: string
   paid_date: string
   memo: string
+  recurrence_period: RecurrencePeriod | ''
 }

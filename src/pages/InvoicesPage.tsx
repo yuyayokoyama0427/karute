@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { Client, Invoice, InvoiceForm, InvoiceStatus, Project } from '../types/index'
 import { getInvoiceAlert, daysUntilDue } from '../lib/alerts'
+import { printInvoice } from '../lib/printInvoice'
 
 interface Props {
   invoices: Invoice[]
@@ -14,7 +15,14 @@ interface Props {
   onUpdateStatus: (id: string, status: InvoiceStatus) => Promise<boolean>
   onRemove: (id: string) => Promise<boolean>
   error: string | null
+  user: { email?: string; user_metadata?: { full_name?: string } }
 }
+
+const RECURRENCE_LABELS = {
+  monthly: '毎月',
+  quarterly: '四半期ごと',
+  yearly: '毎年',
+} as const
 
 const EMPTY_FORM: InvoiceForm = {
   project_id: '',
@@ -25,6 +33,7 @@ const EMPTY_FORM: InvoiceForm = {
   due_date: '',
   paid_date: '',
   memo: '',
+  recurrence_period: '',
 }
 
 const STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -155,6 +164,22 @@ function InvoiceModal({ initial, projects, clients, onSave, onClose, error }: Mo
           rows={2}
           className="w-full bg-gray-100 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
         />
+        <div>
+          <p className="text-base text-gray-400 mb-1">繰り返し請求</p>
+          <select
+            value={form.recurrence_period}
+            onChange={setField('recurrence_period')}
+            className="w-full bg-gray-100 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">繰り返しなし</option>
+            <option value="monthly">毎月</option>
+            <option value="quarterly">四半期ごと（3ヶ月）</option>
+            <option value="yearly">毎年</option>
+          </select>
+          {form.recurrence_period && (
+            <p className="text-xs text-gray-400 mt-1">支払期限を基準に次回の請求が自動作成されます</p>
+          )}
+        </div>
         {error && <p className="text-base text-red-500">{error}</p>}
         <button
           onClick={handleSave}
@@ -197,7 +222,7 @@ function exportCsv(invoices: Invoice[], projects: Project[], clients: Client[]) 
   URL.revokeObjectURL(url)
 }
 
-export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error }: Props) {
+export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error, user }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Invoice | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -318,10 +343,15 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
               <div key={inv.id} className={`bg-white rounded-2xl p-4 shadow-sm ${alertLevel === 'overdue' ? 'border border-red-200' : alertLevel === 'urgent' ? 'border border-orange-200' : ''}`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className={`text-base font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[inv.status]}`}>
                         {STATUS_LABELS[inv.status]}
                       </span>
+                      {inv.recurrence_period && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">
+                          🔄 {RECURRENCE_LABELS[inv.recurrence_period]}
+                        </span>
+                      )}
                       {alertLevel === 'overdue' && (
                         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
                           {Math.abs(days ?? 0)}日超過
@@ -348,7 +378,21 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
                       <p className="text-base text-gray-400">{projectTitle(inv.project_id)}</p>
                     )}
                   </div>
-                  <div className="flex gap-2 ml-2">
+                  <div className="flex gap-2 ml-2 items-center">
+                    <button
+                      onClick={() => {
+                        const client = clients.find(c => c.id === inv.client_id)
+                        const project = projects.find(p => p.id === inv.project_id)
+                        const name = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? ''
+                        printInvoice(inv, client, project, name, user.email ?? '')
+                      }}
+                      className="text-base text-gray-400 hover:text-gray-600 transition-colors"
+                      title="PDF出力"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                      </svg>
+                    </button>
                     <button
                       onClick={() => setEditing(inv)}
                       className="text-base text-indigo-500 hover:text-indigo-700 transition-colors"
@@ -407,6 +451,7 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
             due_date: editing.due_date ?? '',
             paid_date: editing.paid_date ?? '',
             memo: editing.memo ?? '',
+            recurrence_period: editing.recurrence_period ?? '',
           } : undefined}
           projects={projects}
           clients={clients}

@@ -91,6 +91,7 @@ function App() {
           onUpdateStatus={updateInvoiceStatus}
           onRemove={removeInvoice}
           error={invoiceError}
+          user={user}
         />
       )}
 

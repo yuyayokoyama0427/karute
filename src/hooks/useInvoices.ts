@@ -29,9 +29,18 @@ export function useInvoices(user: User | null) {
     void fetch()
   }, [fetch])
 
+  function calcNextDate(period: string, from: string): string {
+    const d = new Date(from)
+    if (period === 'monthly') d.setMonth(d.getMonth() + 1)
+    else if (period === 'quarterly') d.setMonth(d.getMonth() + 3)
+    else if (period === 'yearly') d.setFullYear(d.getFullYear() + 1)
+    return d.toISOString().slice(0, 10)
+  }
+
   async function add(form: InvoiceForm): Promise<boolean> {
     if (!user) return false
     setError(null)
+    const today = new Date().toISOString().slice(0, 10)
     const { error: err } = await supabase.from('karute_invoices').insert({
       user_id: user.id,
       project_id: form.project_id || null,
@@ -42,6 +51,10 @@ export function useInvoices(user: User | null) {
       due_date: form.due_date || null,
       paid_date: form.paid_date || null,
       memo: form.memo || null,
+      recurrence_period: form.recurrence_period || null,
+      recurrence_next_date: form.recurrence_period
+        ? calcNextDate(form.recurrence_period, form.due_date || today)
+        : null,
     })
     if (err) {
       setError(err.message)
@@ -53,6 +66,7 @@ export function useInvoices(user: User | null) {
 
   async function update(id: string, form: InvoiceForm): Promise<boolean> {
     setError(null)
+    const today = new Date().toISOString().slice(0, 10)
     const { error: err } = await supabase
       .from('karute_invoices')
       .update({
@@ -64,6 +78,10 @@ export function useInvoices(user: User | null) {
         due_date: form.due_date || null,
         paid_date: form.paid_date || null,
         memo: form.memo || null,
+        recurrence_period: form.recurrence_period || null,
+        recurrence_next_date: form.recurrence_period
+          ? calcNextDate(form.recurrence_period, form.due_date || today)
+          : null,
       })
       .eq('id', id)
     if (err) {

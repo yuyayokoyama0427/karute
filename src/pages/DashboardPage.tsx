@@ -169,8 +169,21 @@ export function DashboardPage({ user, projects, invoices }: Props) {
             <p className="text-xl font-bold text-orange-500">{formatCurrency(uncollected)}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm col-span-2">
-            <p className="text-base text-gray-500 mb-1">進行中の案件</p>
-            <p className="text-2xl font-bold text-gray-900">{activeProjects} 件</p>
+            <p className="text-base text-gray-500 mb-3">案件数</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">{projects.length}</p>
+                <p className="text-sm text-gray-400 mt-0.5">全案件</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-indigo-600">{activeProjects}</p>
+                <p className="text-sm text-gray-400 mt-0.5">進行中</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{projects.filter(p => p.status === 'completed').length}</p>
+                <p className="text-sm text-gray-400 mt-0.5">完了</p>
+              </div>
+            </div>
           </div>
         </div>
 

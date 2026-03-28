@@ -13,7 +13,7 @@ export function useInvoices(user: User | null) {
     setLoading(true)
     setError(null)
     const { data, error: err } = await supabase
-      .from('invoices')
+      .from('karute_invoices')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -32,7 +32,7 @@ export function useInvoices(user: User | null) {
   async function add(form: InvoiceForm): Promise<boolean> {
     if (!user) return false
     setError(null)
-    const { error: err } = await supabase.from('invoices').insert({
+    const { error: err } = await supabase.from('karute_invoices').insert({
       user_id: user.id,
       project_id: form.project_id || null,
       client_id: form.client_id || null,
@@ -54,7 +54,7 @@ export function useInvoices(user: User | null) {
   async function update(id: string, form: InvoiceForm): Promise<boolean> {
     setError(null)
     const { error: err } = await supabase
-      .from('invoices')
+      .from('karute_invoices')
       .update({
         project_id: form.project_id || null,
         client_id: form.client_id || null,
@@ -80,7 +80,7 @@ export function useInvoices(user: User | null) {
     if (status === 'paid') {
       updates['paid_date'] = new Date().toISOString().slice(0, 10)
     }
-    const { error: err } = await supabase.from('invoices').update(updates).eq('id', id)
+    const { error: err } = await supabase.from('karute_invoices').update(updates).eq('id', id)
     if (err) {
       setError(err.message)
       return false
@@ -91,7 +91,7 @@ export function useInvoices(user: User | null) {
 
   async function remove(id: string): Promise<boolean> {
     setError(null)
-    const { error: err } = await supabase.from('invoices').delete().eq('id', id)
+    const { error: err } = await supabase.from('karute_invoices').delete().eq('id', id)
     if (err) {
       setError(err.message)
       return false

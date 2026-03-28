@@ -13,7 +13,7 @@ export function useClients(user: User | null) {
     setLoading(true)
     setError(null)
     const { data, error: err } = await supabase
-      .from('clients')
+      .from('karute_clients')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -32,7 +32,7 @@ export function useClients(user: User | null) {
   async function add(form: ClientForm): Promise<boolean> {
     if (!user) return false
     setError(null)
-    const { error: err } = await supabase.from('clients').insert({
+    const { error: err } = await supabase.from('karute_clients').insert({
       user_id: user.id,
       name: form.name,
       company: form.company || null,
@@ -51,7 +51,7 @@ export function useClients(user: User | null) {
   async function update(id: string, form: ClientForm): Promise<boolean> {
     setError(null)
     const { error: err } = await supabase
-      .from('clients')
+      .from('karute_clients')
       .update({
         name: form.name,
         company: form.company || null,
@@ -70,7 +70,7 @@ export function useClients(user: User | null) {
 
   async function remove(id: string): Promise<boolean> {
     setError(null)
-    const { error: err } = await supabase.from('clients').delete().eq('id', id)
+    const { error: err } = await supabase.from('karute_clients').delete().eq('id', id)
     if (err) {
       setError(err.message)
       return false

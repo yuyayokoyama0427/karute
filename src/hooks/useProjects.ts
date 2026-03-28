@@ -13,7 +13,7 @@ export function useProjects(user: User | null) {
     setLoading(true)
     setError(null)
     const { data, error: err } = await supabase
-      .from('projects')
+      .from('karute_projects')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -32,7 +32,7 @@ export function useProjects(user: User | null) {
   async function add(form: ProjectForm): Promise<boolean> {
     if (!user) return false
     setError(null)
-    const { error: err } = await supabase.from('projects').insert({
+    const { error: err } = await supabase.from('karute_projects').insert({
       user_id: user.id,
       client_id: form.client_id || null,
       title: form.title,
@@ -54,7 +54,7 @@ export function useProjects(user: User | null) {
   async function update(id: string, form: ProjectForm): Promise<boolean> {
     setError(null)
     const { error: err } = await supabase
-      .from('projects')
+      .from('karute_projects')
       .update({
         client_id: form.client_id || null,
         title: form.title,
@@ -76,7 +76,7 @@ export function useProjects(user: User | null) {
 
   async function remove(id: string): Promise<boolean> {
     setError(null)
-    const { error: err } = await supabase.from('projects').delete().eq('id', id)
+    const { error: err } = await supabase.from('karute_projects').delete().eq('id', id)
     if (err) {
       setError(err.message)
       return false

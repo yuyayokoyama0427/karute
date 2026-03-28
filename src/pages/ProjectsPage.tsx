@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
-import type { Client, Project, ProjectForm, ProjectStatus } from '../types/index'
+import type { Client, Invoice, Project, ProjectForm, ProjectStatus } from '../types/index'
 
 const FREE_LIMIT = 10
 
@@ -29,6 +29,7 @@ function exportProjectsCsv(projects: Project[], clients: Client[]) {
 interface Props {
   projects: Project[]
   clients: Client[]
+  invoices: Invoice[]
   isPro: boolean
   onUpgrade: () => void
   onAdd: (form: ProjectForm) => Promise<boolean>
@@ -44,6 +45,7 @@ const EMPTY_FORM: ProjectForm = {
   status: 'active',
   rate: '',
   rate_type: 'fixed',
+  cost: '',
   start_date: '',
   end_date: '',
   memo: '',
@@ -132,6 +134,13 @@ function ProjectModal({ initial, clients, onSave, onClose, error }: ModalProps) 
             <option value="hourly">時給</option>
           </select>
         </div>
+        <input
+          value={form.cost}
+          onChange={setField('cost')}
+          placeholder="原価・コスト（粗利計算用）"
+          type="number"
+          className="w-full bg-gray-100 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-indigo-500"
+        />
         <div className="flex gap-2">
           <div className="flex-1">
             <p className="text-base text-gray-400 mb-1">開始日</p>
@@ -178,20 +187,40 @@ function ProjectModal({ initial, clients, onSave, onClose, error }: ModalProps) 
   )
 }
 
-export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error }: Props) {
+export function ProjectsPage({ projects, clients, invoices, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'all'>('all')
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [search, setSearch] = useState('')
+
+  const searched = search.trim()
+    ? projects.filter(p =>
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        (clientName(p.client_id) ?? '').toLowerCase().includes(search.toLowerCase())
+      )
+    : projects
 
   const filtered = filterStatus === 'all'
-    ? projects
-    : projects.filter(p => p.status === filterStatus)
+    ? searched
+    : searched.filter(p => p.status === filterStatus)
 
   function clientName(clientId: string | null) {
     if (!clientId) return null
     return clients.find(c => c.id === clientId)?.name ?? null
+  }
+
+  function projectRevenue(projectId: string) {
+    return invoices
+      .filter(inv => inv.project_id === projectId)
+      .reduce((sum, inv) => sum + inv.amount, 0)
+  }
+
+  function projectGrossProfit(project: Project) {
+    const revenue = projectRevenue(project.id)
+    if (project.cost == null) return null
+    return revenue - project.cost
   }
 
   function handleAddClick() {
@@ -219,7 +248,8 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
-      <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 px-4 py-4 space-y-3">
+        <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">案件</h2>
         <div className="flex items-center gap-2">
           {!isPro && (
@@ -268,6 +298,18 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
             追加
           </button>
         </div>
+        </div>
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="案件名・クライアント名で検索"
+            className="w-full bg-gray-100 rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
       </header>
 
       {/* フィルタ（リストのみ） */}
@@ -294,14 +336,17 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
         <div className="p-4 space-y-3">
           {filtered.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
-              <p className="text-4xl mb-3">📁</p>
-              <p className="text-base mb-4">案件がまだありません</p>
-              <button
-                onClick={handleAddClick}
-                className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-              >
-                最初の案件を追加する →
-              </button>
+              {projects.length === 0 ? (
+                <>
+                  <p className="text-4xl mb-3">📁</p>
+                  <p className="text-base mb-4">案件がまだありません</p>
+                  <button onClick={handleAddClick} className="text-base font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                    最初の案件を追加する →
+                  </button>
+                </>
+              ) : (
+                <p className="text-base">「{search}」に一致する案件はありません</p>
+              )}
             </div>
           ) : (
             filtered.map(project => (
@@ -332,13 +377,22 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
                     </button>
                   ))}
                 </div>
-                <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-base text-gray-500">
+                <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-base text-gray-500 flex-wrap">
                   {project.rate && (
                     <span>{project.rate.toLocaleString('ja-JP')}円{project.rate_type === 'hourly' ? '/h' : '（固定）'}</span>
                   )}
                   {project.start_date && (
                     <span>{project.start_date}{project.end_date ? ` 〜 ${project.end_date}` : ' 〜'}</span>
                   )}
+                  {(() => {
+                    const gp = projectGrossProfit(project)
+                    if (gp === null) return null
+                    return (
+                      <span className={`font-medium ${gp >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        粗利 {gp >= 0 ? '+' : ''}{gp.toLocaleString('ja-JP')}円
+                      </span>
+                    )
+                  })()}
                 </div>
                 {project.memo && <p className="text-base text-gray-400 mt-2 line-clamp-2">{project.memo}</p>}
               </div>
@@ -446,6 +500,7 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
             status: editing.status,
             rate: editing.rate != null ? String(editing.rate) : '',
             rate_type: editing.rate_type,
+            cost: editing.cost != null ? String(editing.cost) : '',
             start_date: editing.start_date ?? '',
             end_date: editing.end_date ?? '',
             memo: editing.memo ?? '',

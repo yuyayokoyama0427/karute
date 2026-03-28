@@ -61,6 +61,7 @@ export interface Project {
   status: ProjectStatus
   rate: number | null
   rate_type: RateType
+  cost: number | null
   start_date: string | null
   end_date: string | null
   memo: string | null
@@ -100,6 +101,7 @@ export interface ProjectForm {
   status: ProjectStatus
   rate: string
   rate_type: RateType
+  cost: string
   start_date: string
   end_date: string
   memo: string

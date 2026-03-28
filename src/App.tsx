@@ -70,6 +70,7 @@ function App() {
         <ProjectsPage
           projects={projects}
           clients={clients}
+          invoices={invoices}
           isPro={isPro}
           onUpgrade={() => setShowPro(true)}
           onAdd={addProject}

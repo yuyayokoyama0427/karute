@@ -227,10 +227,20 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
   const [editing, setEditing] = useState<Invoice | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<InvoiceStatus | 'all'>('all')
+  const [search, setSearch] = useState('')
+
+  const searched = search.trim()
+    ? invoices.filter(inv => {
+        const name = clients.find(c => c.id === inv.client_id)?.name ?? ''
+        const title = projects.find(p => p.id === inv.project_id)?.title ?? ''
+        const q = search.toLowerCase()
+        return name.toLowerCase().includes(q) || title.toLowerCase().includes(q)
+      })
+    : invoices
 
   const filtered = filterStatus === 'all'
-    ? invoices
-    : invoices.filter(inv => inv.status === filterStatus)
+    ? searched
+    : searched.filter(inv => inv.status === filterStatus)
 
   const total = filtered.reduce((sum, inv) => sum + inv.amount, 0)
 
@@ -268,7 +278,8 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
-      <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 px-4 py-4 space-y-3">
+        <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">請求</h2>
         <div className="flex items-center gap-2">
           {isPro ? (
@@ -292,6 +303,18 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
           >
             追加
           </button>
+        </div>
+        </div>
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="クライアント名・案件名で検索"
+            className="w-full bg-gray-100 rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          />
         </div>
       </header>
 

@@ -33,6 +33,7 @@ interface Props {
   onUpgrade: () => void
   onAdd: (form: ProjectForm) => Promise<boolean>
   onUpdate: (id: string, form: ProjectForm) => Promise<boolean>
+  onUpdateStatus: (id: string, status: ProjectStatus) => Promise<boolean>
   onRemove: (id: string) => Promise<boolean>
   error: string | null
 }
@@ -177,7 +178,7 @@ function ProjectModal({ initial, clients, onSave, onClose, error }: ModalProps) 
   )
 }
 
-export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpdate, onRemove, error }: Props) {
+export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -306,6 +307,23 @@ export function ProjectsPage({ projects, clients, isPro, onUpgrade, onAdd, onUpd
                   </button>
                 </div>
               </div>
+              {/* クイックステータス変更 */}
+              <div className="flex gap-1.5 mt-3">
+                {(['active', 'completed', 'paused'] as const).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => onUpdateStatus(project.id, s)}
+                    className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                      project.status === s
+                        ? STATUS_COLORS[s]
+                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                    }`}
+                  >
+                    {STATUS_LABELS[s]}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-base text-gray-500">
                 {project.rate && (
                   <span>

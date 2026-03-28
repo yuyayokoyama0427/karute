@@ -74,6 +74,20 @@ export function useProjects(user: User | null) {
     return true
   }
 
+  async function updateStatus(id: string, status: Project['status']): Promise<boolean> {
+    setError(null)
+    const { error: err } = await supabase
+      .from('karute_projects')
+      .update({ status })
+      .eq('id', id)
+    if (err) {
+      setError(err.message)
+      return false
+    }
+    await fetch()
+    return true
+  }
+
   async function remove(id: string): Promise<boolean> {
     setError(null)
     const { error: err } = await supabase.from('karute_projects').delete().eq('id', id)
@@ -85,5 +99,5 @@ export function useProjects(user: User | null) {
     return true
   }
 
-  return { projects, loading, error, add, update, remove, refetch: fetch }
+  return { projects, loading, error, add, update, updateStatus, remove, refetch: fetch }
 }

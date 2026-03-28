@@ -22,7 +22,7 @@ function App() {
   const [showPro, setShowPro] = useState(false)
 
   const { clients, add: addClient, update: updateClient, remove: removeClient, error: clientError } = useClients(user)
-  const { projects, add: addProject, update: updateProject, remove: removeProject, error: projectError } = useProjects(user)
+  const { projects, add: addProject, update: updateProject, updateStatus: updateProjectStatus, remove: removeProject, error: projectError } = useProjects(user)
   const { invoices, add: addInvoice, update: updateInvoice, updateStatus: updateInvoiceStatus, remove: removeInvoice, error: invoiceError } = useInvoices(user)
 
   const { overdue, urgent } = getAlertSummary(invoices)
@@ -43,7 +43,7 @@ function App() {
   return (
     <>
       <BottomNav active={tab} onChange={setTab} user={user} isPro={isPro} onUpgrade={() => setShowPro(true)} onSignOut={signOut} alertCount={alertCount} />
-      <div className="ml-52 min-h-screen">
+      <div className="lg:ml-52 min-h-screen pb-16 lg:pb-0">
       {tab === 'dashboard' && (
         <DashboardPage
           user={user}
@@ -74,6 +74,7 @@ function App() {
           onUpgrade={() => setShowPro(true)}
           onAdd={addProject}
           onUpdate={updateProject}
+          onUpdateStatus={updateProjectStatus}
           onRemove={removeProject}
           error={projectError}
         />

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { Client, ClientForm, Invoice, Project } from '../types/index'
+import { ClientDetailPage } from './ClientDetailPage'
 
 const FREE_LIMIT = 3
 
@@ -128,6 +129,19 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Client | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [detailClient, setDetailClient] = useState<Client | null>(null)
+
+  if (detailClient) {
+    return (
+      <ClientDetailPage
+        client={detailClient}
+        projects={projects}
+        invoices={invoices}
+        onBack={() => setDetailClient(null)}
+        onEdit={() => { setEditing(detailClient); setDetailClient(null) }}
+      />
+    )
+  }
 
   function clientProjectCount(clientId: string) {
     return projects.filter(p => p.client_id === clientId).length
@@ -212,7 +226,11 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
           </div>
         ) : (
           clients.map(client => (
-            <div key={client.id} className="bg-white rounded-2xl p-4 shadow-sm">
+            <div
+              key={client.id}
+              className="bg-white rounded-2xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => setDetailClient(client)}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 truncate">{client.name}</p>
@@ -223,7 +241,7 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
                     <p className="text-base text-gray-400 truncate">{client.email}</p>
                   )}
                 </div>
-                <div className="flex gap-2 ml-2">
+                <div className="flex gap-2 ml-2" onClick={e => e.stopPropagation()}>
                   <button
                     onClick={() => setEditing(client)}
                     className="text-base text-indigo-500 hover:text-indigo-700 transition-colors"

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const CHECKOUT_URL = 'https://karute.lemonsqueezy.com/checkout/buy/karute-pro'
+const CHECKOUT_URL = 'https://yomiyasu.lemonsqueezy.com/checkout/buy/d5d409f7-b8bd-4ef3-bdc7-04635deab906'
 
 interface Props {
   onActivate: (key: string) => Promise<void>

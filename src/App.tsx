@@ -38,14 +38,13 @@ function App() {
 
   return (
     <>
-      <BottomNav active={tab} onChange={setTab} />
+      <BottomNav active={tab} onChange={setTab} user={user} isPro={isPro} onUpgrade={() => setShowPro(true)} onSignOut={signOut} />
       <div className="ml-52 min-h-screen">
       {tab === 'dashboard' && (
         <DashboardPage
           user={user}
           projects={projects}
           invoices={invoices}
-          onSignOut={signOut}
         />
       )}
       {tab === 'clients' && (

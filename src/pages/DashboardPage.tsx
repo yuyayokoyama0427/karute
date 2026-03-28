@@ -14,14 +14,13 @@ interface Props {
   user: User
   projects: Project[]
   invoices: Invoice[]
-  onSignOut: () => void
 }
 
 function formatCurrency(n: number): string {
   return n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY' })
 }
 
-export function DashboardPage({ user, projects, invoices, onSignOut }: Props) {
+export function DashboardPage({ user, projects, invoices }: Props) {
   const now = new Date()
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
@@ -52,20 +51,14 @@ export function DashboardPage({ user, projects, invoices, onSignOut }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
-      <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Karute</h1>
-        <button
-          onClick={onSignOut}
-          className="text-base text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          ログアウト
-        </button>
+      <header className="bg-white border-b border-gray-200 px-6 py-5">
+        <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
+        <p className="text-sm text-gray-400 mt-0.5">
+          {user.user_metadata?.full_name ?? user.email?.split('@')[0]} さん、こんにちは
+        </p>
       </header>
 
-      <div className="p-4 space-y-4">
-        <p className="text-base text-gray-500">
-          {user.email?.split('@')[0]} さん、こんにちは
-        </p>
+      <div className="p-6 space-y-5">
 
         {/* サマリーカード */}
         <div className="grid grid-cols-2 gap-3">

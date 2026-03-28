@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- 背景 -->
+  <rect width="1200" height="630" fill="#f8f9ff"/>
+
+  <!-- 左アクセント帯 -->
+  <rect x="0" y="0" width="8" height="630" fill="#4F46E5"/>
+
+  <!-- 右側装飾円 -->
+  <circle cx="1020" cy="180" r="200" fill="#EEF2FF" opacity="0.8"/>
+  <circle cx="1080" cy="450" r="130" fill="#E0E7FF" opacity="0.6"/>
+
+  <!-- カルテアイコン風 -->
+  <rect x="100" y="140" width="90" height="110" rx="10" fill="none" stroke="#4F46E5" stroke-width="4"/>
+  <line x1="120" y1="175" x2="170" y2="175" stroke="#4F46E5" stroke-width="3"/>
+  <line x1="120" y1="198" x2="170" y2="198" stroke="#4F46E5" stroke-width="3"/>
+  <line x1="120" y1="221" x2="150" y2="221" stroke="#4F46E5" stroke-width="3"/>
+
+  <!-- アプリ名 -->
+  <text x="215" y="190" font-family="'Helvetica Neue', Arial, sans-serif" font-size="60" font-weight="800" fill="#1e1b4b" letter-spacing="-2">Karute</text>
+  <text x="217" y="230" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" fill="#4F46E5" letter-spacing="1">案件管理 CRM</text>
+
+  <!-- キャッチコピー -->
+  <text x="100" y="335" font-family="'Helvetica Neue', Arial, sans-serif" font-size="52" font-weight="700" fill="#1e1b4b" letter-spacing="-1">案件・クライアント・請求を</text>
+  <text x="100" y="400" font-family="'Helvetica Neue', Arial, sans-serif" font-size="52" font-weight="700" fill="#1e1b4b" letter-spacing="-1">ひとつに。</text>
+
+  <!-- サブテキスト -->
+  <text x="100" y="470" font-family="'Helvetica Neue', Arial, sans-serif" font-size="24" fill="#6366f1">フリーランス・副業者向け シンプルCRM</text>
+
+  <!-- 価格バッジ -->
+  <rect x="100" y="505" width="220" height="48" rx="24" fill="#4F46E5"/>
+  <text x="210" y="535" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff" text-anchor="middle">月額 500円〜</text>
+
+  <!-- URL -->
+  <text x="1180" y="610" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" fill="#a5b4fc" text-anchor="end">karute-gray.vercel.app</text>
+</svg>

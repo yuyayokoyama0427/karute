@@ -9,9 +9,10 @@ interface Props {
   isPro: boolean
   onUpgrade: () => void
   onSignOut: () => void
+  alertCount?: number
 }
 
-export function BottomNav({ active, onChange, user, isPro, onUpgrade, onSignOut }: Props) {
+export function BottomNav({ active, onChange, user, isPro, onUpgrade, onSignOut, alertCount }: Props) {
   const items: { tab: Tab; label: string; icon: string }[] = [
     { tab: 'dashboard', label: 'ダッシュボード', icon: '🏠' },
     { tab: 'clients', label: 'クライアント', icon: '👤' },
@@ -43,7 +44,12 @@ export function BottomNav({ active, onChange, user, isPro, onUpgrade, onSignOut 
             }`}
           >
             <span className="text-lg leading-none">{icon}</span>
-            {label}
+            <span className="flex-1">{label}</span>
+            {tab === 'invoices' && alertCount != null && alertCount > 0 && (
+              <span className="text-xs font-bold bg-red-500 text-white rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">
+                {alertCount}
+              </span>
+            )}
           </button>
         ))}
       </nav>

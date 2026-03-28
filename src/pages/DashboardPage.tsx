@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { Client, Invoice, Project } from '../types/index'
+import { AlertBanner } from '../components/AlertBanner'
 import {
   BarChart,
   Bar,
@@ -16,6 +17,7 @@ interface Props {
   projects: Project[]
   invoices: Invoice[]
   clients: Client[]
+  onTabChange: (tab: 'invoices') => void
 }
 
 function formatCurrency(n: number): string {
@@ -26,7 +28,7 @@ function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
 
-export function DashboardPage({ user, projects, invoices, clients }: Props) {
+export function DashboardPage({ user, projects, invoices, clients, onTabChange }: Props) {
   const now = new Date()
   const [mode, setMode] = useState<'month' | 'year'>('month')
   const [year, setYear] = useState(now.getFullYear())
@@ -94,6 +96,12 @@ export function DashboardPage({ user, projects, invoices, clients }: Props) {
           {user.user_metadata?.full_name ?? user.email?.split('@')[0]} さん、こんにちは
         </p>
       </header>
+
+      <AlertBanner
+        invoices={invoices}
+        clients={clients}
+        onClickInvoices={() => onTabChange('invoices')}
+      />
 
       <div className="p-6 space-y-5">
 

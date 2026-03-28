@@ -13,6 +13,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { InvoicesPage } from './pages/InvoicesPage'
+import { getAlertSummary } from './lib/alerts'
 
 function App() {
   const { user, loading, signIn, signOut } = useAuth()
@@ -23,6 +24,9 @@ function App() {
   const { clients, add: addClient, update: updateClient, remove: removeClient, error: clientError } = useClients(user)
   const { projects, add: addProject, update: updateProject, remove: removeProject, error: projectError } = useProjects(user)
   const { invoices, add: addInvoice, update: updateInvoice, updateStatus: updateInvoiceStatus, remove: removeInvoice, error: invoiceError } = useInvoices(user)
+
+  const { overdue, urgent } = getAlertSummary(invoices)
+  const alertCount = overdue.length + urgent.length
 
   if (loading) {
     return (
@@ -38,7 +42,7 @@ function App() {
 
   return (
     <>
-      <BottomNav active={tab} onChange={setTab} user={user} isPro={isPro} onUpgrade={() => setShowPro(true)} onSignOut={signOut} />
+      <BottomNav active={tab} onChange={setTab} user={user} isPro={isPro} onUpgrade={() => setShowPro(true)} onSignOut={signOut} alertCount={alertCount} />
       <div className="ml-52 min-h-screen">
       {tab === 'dashboard' && (
         <DashboardPage
@@ -46,6 +50,7 @@ function App() {
           projects={projects}
           invoices={invoices}
           clients={clients}
+          onTabChange={setTab}
         />
       )}
       {tab === 'clients' && (

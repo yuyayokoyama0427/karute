@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { Client, Invoice, InvoiceForm, InvoiceStatus, Project } from '../types/index'
+import { getInvoiceAlert, daysUntilDue } from '../lib/alerts'
 
 interface Props {
   invoices: Invoice[]
@@ -311,14 +312,31 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
         ) : (
           filtered.map(inv => {
             const nextLabel = NEXT_STATUS_LABEL[inv.status]
+            const alertLevel = getInvoiceAlert(inv)
+            const days = inv.due_date ? daysUntilDue(inv.due_date) : null
             return (
-              <div key={inv.id} className="bg-white rounded-2xl p-4 shadow-sm">
+              <div key={inv.id} className={`bg-white rounded-2xl p-4 shadow-sm ${alertLevel === 'overdue' ? 'border border-red-200' : alertLevel === 'urgent' ? 'border border-orange-200' : ''}`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-base font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[inv.status]}`}>
                         {STATUS_LABELS[inv.status]}
                       </span>
+                      {alertLevel === 'overdue' && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                          {Math.abs(days ?? 0)}日超過
+                        </span>
+                      )}
+                      {alertLevel === 'urgent' && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                          {days === 0 ? '今日が期限' : `あと${days}日`}
+                        </span>
+                      )}
+                      {alertLevel === 'soon' && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                          あと{days}日
+                        </span>
+                      )}
                     </div>
                     <p className="text-2xl font-bold text-gray-900">
                       {inv.amount.toLocaleString('ja-JP')}円
@@ -346,10 +364,19 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                  <div className="text-base text-gray-400 space-y-0.5">
-                    {inv.invoice_date && <p>請求日: {inv.invoice_date}</p>}
-                    {inv.due_date && <p>期限: {inv.due_date}</p>}
-                    {inv.paid_date && <p>入金日: {inv.paid_date}</p>}
+                  <div className="text-base space-y-0.5">
+                    {inv.invoice_date && <p className="text-gray-400">請求日: {inv.invoice_date}</p>}
+                    {inv.due_date && (
+                      <p className={
+                        alertLevel === 'overdue' ? 'text-red-600 font-medium' :
+                        alertLevel === 'urgent' ? 'text-orange-600 font-medium' :
+                        alertLevel === 'soon' ? 'text-yellow-600' :
+                        'text-gray-400'
+                      }>
+                        期限: {inv.due_date}
+                      </p>
+                    )}
+                    {inv.paid_date && <p className="text-gray-400">入金日: {inv.paid_date}</p>}
                   </div>
                   {nextLabel && (
                     <button

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
-import type { Client, Invoice, Project, ProjectForm, ProjectStatus } from '../types/index'
+import type { Client, Invoice, InvoiceForm, Project, ProjectForm, ProjectStatus } from '../types/index'
 
 const FREE_LIMIT = 10
 
@@ -37,6 +37,7 @@ interface Props {
   onUpdateStatus: (id: string, status: ProjectStatus) => Promise<boolean>
   onRemove: (id: string) => Promise<boolean>
   error: string | null
+  onCreateInvoice: (form: InvoiceForm) => Promise<void>
 }
 
 const EMPTY_FORM: ProjectForm = {
@@ -187,7 +188,7 @@ function ProjectModal({ initial, clients, onSave, onClose, error }: ModalProps) 
   )
 }
 
-export function ProjectsPage({ projects, clients, invoices, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error }: Props) {
+export function ProjectsPage({ projects, clients, invoices, isPro, onUpgrade, onAdd, onUpdate, onUpdateStatus, onRemove, error, onCreateInvoice }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -395,6 +396,26 @@ export function ProjectsPage({ projects, clients, invoices, isPro, onUpgrade, on
                   })()}
                 </div>
                 {project.memo && <p className="text-base text-gray-400 mt-2 line-clamp-2">{project.memo}</p>}
+                {project.status === 'completed' && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <button
+                      onClick={() => onCreateInvoice({
+                        project_id: project.id,
+                        client_id: project.client_id ?? '',
+                        amount: project.rate != null ? String(project.rate) : '',
+                        status: 'unpaid',
+                        invoice_date: new Date().toISOString().slice(0, 10),
+                        due_date: '',
+                        paid_date: '',
+                        memo: '',
+                        recurrence_period: '',
+                      })}
+                      className="w-full py-2 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-base rounded-xl transition-colors border border-green-200"
+                    >
+                      請求を作成
+                    </button>
+                  </div>
+                )}
               </div>
             ))
           )}

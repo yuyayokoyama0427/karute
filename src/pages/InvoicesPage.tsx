@@ -370,24 +370,24 @@ export function InvoicesPage({ invoices, projects, clients, isPro, onUpgrade, on
                       <span className={`text-base font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[inv.status]}`}>
                         {STATUS_LABELS[inv.status]}
                       </span>
-                      {inv.recurrence_period && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">
-                          🔄 {RECURRENCE_LABELS[inv.recurrence_period]}
-                        </span>
-                      )}
                       {alertLevel === 'overdue' && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                          {Math.abs(days ?? 0)}日超過
+                        <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1">
+                          🔴 <span>{Math.abs(days ?? 0)}日超過</span>
                         </span>
                       )}
                       {alertLevel === 'urgent' && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
-                          {days === 0 ? '今日が期限' : `あと${days}日`}
+                        <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 flex items-center gap-1">
+                          ⚠️ <span>{days === 0 ? '今日が期限' : `あと${days}日`}</span>
                         </span>
                       )}
                       {alertLevel === 'soon' && (
                         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
                           あと{days}日
+                        </span>
+                      )}
+                      {inv.recurrence_period && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">
+                          🔄 {RECURRENCE_LABELS[inv.recurrence_period]}
                         </span>
                       )}
                     </div>

@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react'
 import type { Client, ClientForm, Invoice, Project } from '../types/index'
 import { ClientDetailPage } from './ClientDetailPage'
 
-const FREE_LIMIT = 3
+const FREE_LIMIT = 5
 
 function exportClientsCsv(clients: Client[], projects: Project[], invoices: Invoice[]) {
   const headers = ['名前', '会社名', 'メール', '電話番号', '案件数', '請求合計', 'メモ']
@@ -196,7 +196,9 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
         <h2 className="text-2xl font-bold text-gray-900">クライアント</h2>
         <div className="flex items-center gap-2">
           {!isPro && (
-            <span className="text-base text-gray-400">{clients.length}/{FREE_LIMIT}</span>
+            <span className={`text-base font-medium ${clients.length >= FREE_LIMIT - 1 ? 'text-orange-500' : 'text-gray-400'}`}>
+              {clients.length}/{FREE_LIMIT}{clients.length === FREE_LIMIT - 1 ? ' · 残り1件' : ''}
+            </span>
           )}
           {isPro ? (
             <button
@@ -301,6 +303,14 @@ export function ClientsPage({ clients, projects, invoices, isPro, onUpgrade, onA
           ))
         )}
 
+        {!isPro && clients.length === FREE_LIMIT - 1 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center justify-between">
+            <p className="text-sm text-orange-700">あと1件でクライアントの上限です</p>
+            <button onClick={onUpgrade} className="text-sm font-medium text-orange-600 hover:text-orange-800 underline">
+              Proで無制限 →
+            </button>
+          </div>
+        )}
         {!isPro && clients.length >= FREE_LIMIT && (
           <div className="bg-indigo-50 rounded-2xl p-4 text-center">
             <p className="text-base text-indigo-700 mb-2">無料プランは{FREE_LIMIT}件まで</p>

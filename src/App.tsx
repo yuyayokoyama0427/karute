@@ -78,6 +78,7 @@ function App() {
           onUpdateStatus={updateProjectStatus}
           onRemove={removeProject}
           error={projectError}
+          onCreateInvoice={async (form) => { await addInvoice(form); setTab('invoices') }}
         />
       )}
       {tab === 'invoices' && (
